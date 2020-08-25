@@ -17,7 +17,7 @@ the name parameter is optional.
 ### development
 
 ```sh
-yarn init
+yarn link:cli
 ```
 
 then
