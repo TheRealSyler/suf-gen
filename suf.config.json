@@ -1,0 +1,18 @@
+{
+  "badges": {
+    "name": "suf-gen",
+    "github": "TheRealSyler",
+    "repo": "suf-gen",
+    "out": "README.md",
+    "badges": [
+      "npmV npm"
+    ]
+  },
+  "license": {
+    "name": "Leonard Grosoli",
+    "type": "mit",
+    "year": "2020",
+    "out": "README.md",
+    "file": "LICENSE"
+  }
+}

@@ -706,7 +706,7 @@ strip-indent@^3.0.0:
   dependencies:
     min-indent "^1.0.0"
 
-suf-cli@^0.1.0:
+suf-cli@^0.1.0, suf-cli@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/suf-cli/-/suf-cli-0.1.1.tgz#893e299c55af7942ee1bc4787aa54b084bd8057b"
   integrity sha512-0znmYibLknX0bWsnqW9rzM8IvKux3rTSnW52l5teIC+QAgS/StUl5f4WyLPBw+posfbOgoX+03xHPV4sMxY64Q==

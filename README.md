@@ -1,5 +1,9 @@
 ## suf-gen
 
+<span id="BADGE_GENERATION_MARKER_0"></span>
+[![npmV](https://img.shields.io/npm/v/suf-gen)](https://www.npmjs.com/package/suf-gen)
+<span id="BADGE_GENERATION_MARKER_1"></span>
+
 creates a typescript or preact/typescript base project, using webpack, sass, and babel.
 
 ### usage
@@ -27,3 +31,7 @@ yarn start
 ```sh
 yarn build
 ```
+
+<span id="LICENSE_GENERATION_MARKER_0"></span>
+Copyright (c) 2020 Leonard Grosoli Licensed under the MIT license.
+<span id="LICENSE_GENERATION_MARKER_1"></span>
