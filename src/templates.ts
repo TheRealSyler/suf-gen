@@ -1,0 +1,314 @@
+interface Templates {
+  'asyncRoute.tsx': [];
+  'redirect.tsx': [];
+  '.babelrc': [{ preact: boolean }];
+  'index.html': [{ preact: boolean; name: string }];
+  'index.sass': [];
+  '.gitignore': [];
+  'index.main': [{ preact: boolean }];
+  webpack: [{ preact: boolean }];
+  tsconfig: [{ preact: boolean }];
+  'package.json': [{ name: string; suf: boolean; author: undefined | string }];
+}
+
+type Option<K extends keyof Templates> = Templates[K][0];
+
+export function template<K extends keyof Templates>(name: K, ...options: Templates[K]): string {
+  switch (name) {
+    case 'asyncRoute.tsx':
+      return generateAsyncRoute();
+    case 'redirect.tsx':
+      return generateRedirect();
+    case '.babelrc':
+      return generateBabelrc(options[0] as Option<'.babelrc'>);
+    case 'index.sass':
+      return generateIndexSass();
+    case 'index.html':
+      return generateIndexHtml(options[0] as Option<'index.html'>);
+    case 'index.main':
+      return generateMainIndex(options[0] as Option<'index.main'>);
+    case 'webpack':
+      return generateWebpack(options[0] as Option<'webpack'>);
+    case 'tsconfig':
+      return generateTsconfig(options[0] as Option<'tsconfig'>);
+    case 'package.json':
+      return generatePackageJson(options[0] as Option<'package.json'>);
+    case '.gitignore':
+      return 'node_modules';
+  }
+  return '';
+}
+
+function generatePackageJson(options: Option<'package.json'>) {
+  const additionalSettings = {};
+  if (options.suf) {
+    additionalSettings['suf'] = 'suf';
+  }
+
+  return JSON.stringify(
+    {
+      name: options.name,
+      version: '1.0.0',
+      ...{ author: options.author },
+      license: 'MIT',
+      description: 'Bare bones typescript + webpack template',
+      scripts: {
+        start: 'webpack-dev-server',
+        build: `${options.suf ? 'suf && ' : ''}del ./dist && webpack --mode production`,
+        ...additionalSettings,
+      },
+    },
+    null,
+    2
+  );
+}
+
+function generateTsconfig(options: Option<'tsconfig'>) {
+  const additionalSettings = options.preact ? { jsx: 'react', jsxFactory: 'h' } : {};
+  return JSON.stringify(
+    {
+      compilerOptions: {
+        target: 'es5',
+        module: 'commonjs',
+        esModuleInterop: true,
+        strict: true,
+        forceConsistentCasingInFileNames: true,
+        ...additionalSettings,
+      },
+    },
+    null,
+    2
+  );
+}
+
+function generateWebpack(options: Option<'webpack'>) {
+  return `import { Configuration } from 'webpack';
+import { Configuration as Dev } from 'webpack-dev-server';
+import { resolve } from 'path';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+// const WebpackBundleAnalyzer = require('webpack-bundle-analyzer');
+
+interface C extends Dev, Configuration {}
+
+const config: C = {
+  entry: {
+    index: \`\${__dirname}/src/index.ts${options.preact ? 'x' : ''}\`,
+  },
+  output: {
+    path: resolve(__dirname, 'dist'),
+    chunkFilename: '[name].chunk.js',
+    filename: '[name].bundle.js',
+    publicPath: '/',
+  },
+
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: \`\${__dirname}/public/index.html\`,
+    }),
+    new ForkTsCheckerWebpackPlugin(),
+    // new WebpackBundleAnalyzer.BundleAnalyzerPlugin()
+  ],
+  module: {
+    rules: [
+      {
+        test: /\.s[ac]ss$/i,
+        use: ['style-loader', 'css-loader', 'sass-loader'],
+      },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
+      },
+      {
+        test: /\.tsx?$/,
+        loader: 'babel-loader',
+      },
+      {
+        test: /\.(eot|woff2?|svg|ttf|png|jpe?g)([\?]?.*)$/,
+        loader: 'file-loader',
+        sideEffects: true,
+      },
+    ],
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js']${
+      options.preact
+        ? `,
+    alias: {
+      react: 'preact/compat',
+      'react-dom/test-utils': 'preact/test-utils',
+      'react-dom': 'preact/compat',
+    }`
+        : ''
+    }
+  },
+  devServer: {
+    historyApiFallback: true,
+    allowedHosts: ['localhost'],
+    publicPath: '/',
+  },
+  optimization: {
+    usedExports: true,
+    splitChunks: {
+      chunks: 'all',
+      minSize: 2000,
+    },
+  },
+};
+
+module.exports = config;
+`;
+}
+
+const htmlBody = `  <h2 style="text-align: center;">Using</h2>
+  <p class="paragraph">
+
+    <a href="https://webpack.js.org"><b>Webpack</b></a>
+    <a href="https://babeljs.io/"><b>Babel</b></a>
+    <a href="https://sass-lang.com"><b>Sass</b></a>
+
+  </p>
+  <h2 style="text-align: center;">Supports</h2>
+  <p class="paragraph">
+    <b>Tree Shacking</b>
+  </p>`;
+
+function generateMainIndex(options: Option<'index.main'>) {
+  let preact = '';
+  if (options.preact) {
+    preact = `
+import { h, render, Fragment } from 'preact';
+
+const app = 
+(<Fragment>
+  <h1 class="header">Preact</h1>
+${htmlBody}
+</Fragment>);
+
+render(app, document.body);
+`;
+  }
+
+  return `import './index.sass';
+${preact}`;
+}
+
+function generateIndexHtml(options: Option<'index.html'>) {
+  return `<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${options.name}</title>
+</head>
+
+<body>
+${!options.preact ? '  <h1 class="header">Web Typescript Template</h1>\n' + htmlBody : ''}
+</body>
+
+</html>
+`;
+}
+
+function generateBabelrc(options: Option<'.babelrc'>) {
+  let typescriptPreset: string | any[] = '@babel/typescript';
+  const additionalPlugins: any[] = [];
+  if (options.preact) {
+    typescriptPreset = ['@babel/typescript', { jsxPragma: 'h', onlyRemoveTypeImports: true }];
+    additionalPlugins.push([
+      '@babel/plugin-transform-react-jsx',
+      {
+        pragma: 'h',
+        pragmaFrag: 'Fragment',
+      },
+    ]);
+  }
+
+  return JSON.stringify(
+    {
+      presets: ['@babel/env', typescriptPreset],
+      plugins: [
+        '@babel/proposal-class-properties',
+        '@babel/proposal-object-rest-spread',
+        ...additionalPlugins,
+      ],
+    },
+    null,
+    2
+  );
+}
+
+function generateRedirect() {
+  return `import { h, FunctionComponent } from 'preact';
+import { Suspense, lazy } from 'preact/compat';
+
+interface RedirectProps {
+  to: string;
+}
+
+const Redirect: FunctionComponent<RedirectProps> = (props) => {
+  const { to } = props;
+  route(to, true);
+  return null;
+};
+
+export default Redirect;
+`;
+}
+
+function generateAsyncRoute() {
+  return `import { h, FunctionComponent } from 'preact';
+import { Suspense, lazy } from 'preact/compat';
+
+interface AsyncRouteProps {
+  layout?: FunctionComponent;
+  component: () => Promise<{ default: any }>; // TODO: (low priority), find the type for any
+}
+
+const AsyncRoute: FunctionComponent<AsyncRouteProps> = (props) => {
+  const { component, layout: Layout } = props;
+  const Component = lazy(component);
+  if (Layout) {
+    return (
+      <Layout>
+        <Suspense fallback={<div></div>}>
+          <Component {...props} />
+        </Suspense>
+      </Layout>
+    );
+  }
+  return (
+    <Suspense fallback={<div></div>}>
+      <Component {...props} />
+    </Suspense>
+  );
+};
+
+export default AsyncRoute;
+`;
+}
+
+function generateIndexSass() {
+  return `@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap')
+
+body
+  background: #121418
+  color: #eee
+  font-family: 'Roboto Mono', monospace
+
+.header
+  font-size: 3.5rem
+  text-align: center
+  margin-top: 5rem
+  margin-bottom: 5rem
+
+.paragraph
+  margin: 0 20%
+  text-align: center
+  font-size: 2rem
+
+a
+  color: #699
+`;
+}
