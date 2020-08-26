@@ -212,10 +212,10 @@ ${!options.preact ? '  <h1 class="header">Web Typescript Template</h1>\n' + html
 }
 
 function generateBabelrc(options: Option<'.babelrc'>) {
-  let typescriptPreset: string | any[] = '@babel/typescript';
+  let typescriptPreset: [string, any] = ['@babel/typescript', { onlyRemoveTypeImports: true }];
   const additionalPlugins: any[] = [];
   if (options.preact) {
-    typescriptPreset = ['@babel/typescript', { jsxPragma: 'h', onlyRemoveTypeImports: true }];
+    typescriptPreset[1].jsxPragma = 'h';
     additionalPlugins.push([
       '@babel/plugin-transform-react-jsx',
       {
