@@ -40,6 +40,9 @@ import { allArgs, getProjectName, askQuestion, write, gitInfo, finishedMessage }
   if (preact) {
     await write(dir('src/components/asyncRoute.tsx'), template('asyncRoute.tsx'));
     await write(dir('src/components/redirect.tsx'), template('redirect.tsx'));
+    await write(dir('src/app.tsx'), template('app.tsx'));
+    await write(dir('src/views/home.tsx'), template('home.tsx'));
+    await write(dir('src/layouts/main.tsx'), template('mainLayout.tsx'));
   }
   await write(dir('src/index.sass'), template('index.sass'));
   await write(dir(`src/index.ts${preact ? 'x' : ''}`), template('index.main', { preact }));
@@ -70,7 +73,7 @@ import { allArgs, getProjectName, askQuestion, write, gitInfo, finishedMessage }
     'webpack-dev-server',
   ];
   if (preact) {
-    devPackages.push('preact', '@babel/plugin-transform-react-jsx');
+    devPackages.push('preact', '@babel/plugin-transform-react-jsx', 'preact-router');
   }
 
   const successStyle: LogStyle = { color: green, 'font-weight': 'bold' };

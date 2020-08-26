@@ -1,6 +1,9 @@
 interface Templates {
   'asyncRoute.tsx': [];
   'redirect.tsx': [];
+  'app.tsx': [];
+  'home.tsx': [];
+  'mainLayout.tsx': [];
   '.babelrc': [{ preact: boolean }];
   'index.html': [{ preact: boolean; name: string }];
   'index.sass': [];
@@ -35,6 +38,12 @@ export function template<K extends keyof Templates>(name: K, ...options: Templat
       return generatePackageJson(options[0] as Option<'package.json'>);
     case '.gitignore':
       return 'node_modules';
+    case 'app.tsx':
+      return generateApp();
+    case 'home.tsx':
+      return generateHome();
+    case 'mainLayout.tsx':
+      return generateMainLayout();
   }
   return '';
 }
@@ -160,37 +169,76 @@ module.exports = config;
 `;
 }
 
-const htmlBody = `  <h2 style="text-align: center;">Using</h2>
-  <p class="paragraph">
-
-    <a href="https://webpack.js.org"><b>Webpack</b></a>
-    <a href="https://babeljs.io/"><b>Babel</b></a>
-    <a href="https://sass-lang.com"><b>Sass</b></a>
-
-  </p>
-  <h2 style="text-align: center;">Supports</h2>
-  <p class="paragraph">
-    <b>Tree Shacking</b>
-  </p>`;
-
 function generateMainIndex(options: Option<'index.main'>) {
   let preact = '';
   if (options.preact) {
     preact = `
 import { h, render, Fragment } from 'preact';
+import App from './app';
 
-const app = 
-(<Fragment>
-  <h1 class="header">Preact</h1>
-${htmlBody}
-</Fragment>);
-
-render(app, document.body);
+render(<App/>, document.body);
 `;
   }
 
   return `import './index.sass';
 ${preact}`;
+}
+
+function generateApp() {
+  return `import { h, FunctionComponent } from 'preact';
+import Router from 'preact-router';
+
+import AsyncRoute from './components/asyncRoute';
+import Redirect from './components/redirect';
+import MainLayout from './layouts/main';
+
+const App: FunctionComponent = () => {
+  return (
+    <Router>
+      <AsyncRoute
+        path="/home"
+        layout={MainLayout}
+        component={() => import(/*webpackChunkName: "HomeView"*/ './views/home')}
+      />
+
+      <Redirect to="/home" path="/"></Redirect>
+    </Router>
+  );
+};
+
+export default App;
+`;
+}
+function generateHome() {
+  return `import { h, FunctionComponent } from 'preact';
+
+const Home: FunctionComponent = () => {
+  return (
+    <div></div>
+  );
+};
+
+export default Home;
+`;
+}
+function generateMainLayout() {
+  return `import { h, FunctionComponent } from 'preact';
+
+const MainLayout: FunctionComponent = (props) => {
+  const { children } = props;
+  return (
+    <div>
+      <header style="height: 40px; background: #444"></header>
+      <div style="display: flex">
+        <div style="width: 200px; background: #333; height: calc(100vh - 40px)"></div>
+        <main style="padding: 2rem">{children}</main>
+      </div>
+    </div>
+  );
+};
+
+export default MainLayout;
+`;
 }
 
 function generateIndexHtml(options: Option<'index.html'>) {
@@ -204,7 +252,22 @@ function generateIndexHtml(options: Option<'index.html'>) {
 </head>
 
 <body>
-${!options.preact ? '  <h1 class="header">Web Typescript Template</h1>\n' + htmlBody : ''}
+${
+  !options.preact
+    ? `  <h1 class="header">Web Typescript Template</h1>   <h2 style="text-align: center;">Using</h2>
+  <p class="paragraph">
+  
+    <a href="https://webpack.js.org"><b>Webpack</b></a>
+    <a href="https://babeljs.io/"><b>Babel</b></a>
+    <a href="https://sass-lang.com"><b>Sass</b></a>
+  
+  </p>
+  <h2 style="text-align: center;">Supports</h2>
+  <p class="paragraph">
+    <b>Tree Shacking</b>
+  </p>`
+    : ''
+}
 </body>
 
 </html>
@@ -240,8 +303,8 @@ function generateBabelrc(options: Option<'.babelrc'>) {
 }
 
 function generateRedirect() {
-  return `import { h, FunctionComponent } from 'preact';
-import { Suspense, lazy } from 'preact/compat';
+  return `import { FunctionComponent } from 'preact';
+import { route } from 'preact-router';
 
 interface RedirectProps {
   to: string;
@@ -296,6 +359,7 @@ body
   background: #121418
   color: #eee
   font-family: 'Roboto Mono', monospace
+  margin: 0;
 
 .header
   font-size: 3.5rem
