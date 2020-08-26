@@ -37,7 +37,7 @@ export function template<K extends keyof Templates>(name: K, ...options: Templat
     case 'package.json':
       return generatePackageJson(options[0] as Option<'package.json'>);
     case '.gitignore':
-      return 'node_modules';
+      return 'node_modules\ndist';
     case 'app.tsx':
       return generateApp();
     case 'home.tsx':
