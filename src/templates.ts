@@ -359,7 +359,7 @@ body
   background: #121418
   color: #eee
   font-family: 'Roboto Mono', monospace
-  margin: 0;
+  margin: 0
 
 .header
   font-size: 3.5rem
