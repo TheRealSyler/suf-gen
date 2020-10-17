@@ -62,7 +62,7 @@ function generatePackageJson(options: Option<'package.json'>) {
       license: 'MIT',
       description: 'Bare bones typescript + webpack template',
       scripts: {
-        start: 'webpack-dev-server',
+        start: 'webpack serve',
         build: `${options.suf ? 'suf && ' : ''}del ./dist && webpack --mode production`,
         ...additionalSettings,
       },
@@ -98,7 +98,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 // const WebpackBundleAnalyzer = require('webpack-bundle-analyzer');
 
-interface C extends Dev, Configuration {}
+type C = Dev & Configuration
 
 const config: C = {
   entry: {
@@ -173,7 +173,7 @@ function generateMainIndex(options: Option<'index.main'>) {
   let preact = '';
   if (options.preact) {
     preact = `
-import { h, render, Fragment } from 'preact';
+import { h, render } from 'preact';
 import App from './app';
 
 render(<App/>, document.body);
