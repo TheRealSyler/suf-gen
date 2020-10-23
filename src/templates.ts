@@ -11,7 +11,9 @@ interface Templates {
   'index.main': [{ preact: boolean }];
   webpack: [{ preact: boolean }];
   tsconfig: [{ preact: boolean }];
-  'package.json': [{ name: string; suf: boolean; author: undefined | string }];
+  snowpack: [];
+  'snowpack-add-import-plugin': [];
+  'package.json': [{ name: string; suf: boolean; author: undefined | string; snowpack: boolean }];
 }
 
 type Option<K extends keyof Templates> = Templates[K][0];
@@ -44,6 +46,10 @@ export function template<K extends keyof Templates>(name: K, ...options: Templat
       return generateHome();
     case 'mainLayout.tsx':
       return generateMainLayout();
+    case 'snowpack':
+      return generateSnowpackConf();
+    case 'snowpack-add-import-plugin':
+      return generateSnowpackAddImportPlugin();
   }
   return '';
 }
@@ -60,9 +66,8 @@ function generatePackageJson(options: Option<'package.json'>) {
       version: '1.0.0',
       ...{ author: options.author },
       license: 'MIT',
-      description: 'Bare bones typescript + webpack template',
       scripts: {
-        start: 'webpack serve',
+        start: options.snowpack ? 'snowpack dev' : 'webpack serve',
         build: `${options.suf ? 'suf && ' : ''}del ./dist && webpack --mode production`,
         ...additionalSettings,
       },
@@ -374,5 +379,56 @@ body
 
 a
   color: #699
+`;
+}
+
+function generateSnowpackConf() {
+  return `
+module.exports = {
+  mount: {
+    public: '/',
+    src: '/_dist_',
+  },
+  plugins: [
+    '@prefresh/snowpack',
+    '@snowpack/plugin-dotenv',
+    '@snowpack/plugin-typescript',
+    '@snowpack/plugin-sass',
+    './snowpack-plugin-add-import.js'
+  ],
+  install: [
+    /* ... */
+  ],
+  installOptions: {
+    /* ... */
+  },
+  devOptions: {
+    open: 'none'
+  },
+  buildOptions: {
+    /* ... */
+  },
+  proxy: {
+    /* ... */
+  },
+  alias: {
+    /* ... */
+  },
+};
+`;
+}
+
+function generateSnowpackAddImportPlugin() {
+  return `
+module.exports = function (snowpackConfig, pluginOptions) {
+  return {
+    name: 'snowpack-plugin-add-import',
+    async transform ({ id, contents, isDev, fileExt }) {
+      if (fileExt === '.html') {
+        return contents.replace(/(<body>)((.|\W)*<\\/body>)/, '$1\\n<script type="module" src="/_dist_/index.js"></script>\\n$2');
+      }
+    },
+  };
+};
 `;
 }

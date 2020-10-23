@@ -5,7 +5,7 @@ import { gray, red, green } from './colors';
 import { Exec, getYNAnswer, readConsole } from 'suf-node';
 import { LogStyle, LogTable as LogTableStyle } from '@sorg/log/dist/interfaces';
 
-export function finishedMessage(name: string) {
+export function finishedMessage(name: string, suf: boolean) {
   const style: LogStyle = { background: '#141414', color: gray };
   const text = (text: string) => ({ message: text, style });
   const redText = (text: string) => ({ message: text, style: { ...style, color: red } });
@@ -14,10 +14,12 @@ export function finishedMessage(name: string) {
   const table: LogTableStyle = [
     emptyRow,
     row(`cd ${name}`, 'to enter the project directory.'),
-    row('yarn suf', 'to init suf.'),
     row('yarn start', 'to start the project.'),
     emptyRow,
   ];
+  if (suf) {
+    table.splice(1, 0, row('yarn suf', 'to init suf.'));
+  }
   console.log('\n');
   LogTable(table, { padding: 5 });
   console.log('\n');
@@ -53,9 +55,9 @@ export async function gitInfo() {
   } catch (e) {}
   return undefined;
 }
-export async function askQuestion(question: string): Promise<boolean> {
-  await writeToStdout(styler(question, red), styler('[Y/n]: '));
-  return getYNAnswer();
+export async function askQuestion(question: string, defaultAnswer = true): Promise<boolean> {
+  await writeToStdout(styler(question, red), styler(`[${defaultAnswer ? 'Y/n' : 'y/N'}]: `));
+  return getYNAnswer(defaultAnswer);
 }
 
 async function writeToStdout(...msg: string[]) {
