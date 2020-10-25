@@ -10,7 +10,6 @@ module.exports = {
     src: '/_dist_',
   },
   plugins: [
-    '@prefresh/snowpack',
     '@snowpack/plugin-dotenv',
     '@snowpack/plugin-typescript',
     '@snowpack/plugin-sass',

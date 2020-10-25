@@ -1,15 +1,15 @@
 {
   "name": "suf-gen",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "./dist/cli.js",
   "scripts": {
     "prepack": "jest && del ./dist && npm run build && suf",
-    "link:cli": "yarn &&  tsc -b && npm link",
+    "link:cli": "yarn && yarn build && npm link",
     "test": "jest --coverage",
     "test:watch": "jest --watch --coverage",
     "start": "yarn watch",
     "watch": "tsc -w",
-    "build": "yarn link:cli"
+    "build": "tsc -b"
   },
   "author": "Syler",
   "license": "MIT",
