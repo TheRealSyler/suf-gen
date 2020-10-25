@@ -2,3 +2,5 @@ node_modules
 dist
 .vscode
 tsconfig.tsbuildinfo
+/package-lock.json
+/coverage

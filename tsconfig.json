@@ -10,5 +10,6 @@
     "noImplicitAny": false,
     "strict": true,
     "esModuleInterop": true
-  }
+  },
+  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts", "dist", "src/test"]
 }
