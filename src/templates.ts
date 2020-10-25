@@ -5,13 +5,13 @@ interface Templates {
   'home.tsx': [];
   'mainLayout.tsx': [];
   '.babelrc': [{ preact: boolean }];
-  'index.html': [{ preact: boolean; name: string }];
+  'index.html': [{ preact: boolean; name: string; snowpack: boolean }];
   'index.sass': [];
   '.gitignore': [];
   'index.main': [{ preact: boolean }];
-  webpack: [{ preact: boolean }];
+  webpack: [{ preact: boolean; snowpack: boolean }];
   tsconfig: [{ preact: boolean }];
-  snowpack: [];
+  snowpack: [{ preact: boolean }];
   'snowpack-add-import-plugin': [];
   'package.json': [{ name: string; suf: boolean; author: undefined | string; snowpack: boolean }];
 }
@@ -47,7 +47,7 @@ export function template<K extends keyof Templates>(name: K, ...options: Templat
     case 'mainLayout.tsx':
       return generateMainLayout();
     case 'snowpack':
-      return generateSnowpackConf();
+      return generateSnowpackConf(options[0] as Option<'snowpack'>);
     case 'snowpack-add-import-plugin':
       return generateSnowpackAddImportPlugin();
   }
@@ -96,14 +96,15 @@ function generateTsconfig(options: Option<'tsconfig'>) {
 }
 
 function generateWebpack(options: Option<'webpack'>) {
-  return `import { Configuration } from 'webpack';
-import { Configuration as Dev } from 'webpack-dev-server';
+  return `import { Configuration } from 'webpack';${
+    options.snowpack ? '' : "\nimport { Configuration as Dev } from 'webpack-dev-server';"
+  }
 import { resolve } from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 // const WebpackBundleAnalyzer = require('webpack-bundle-analyzer');
 
-type C = Dev & Configuration
+type C = ${options.snowpack ? '' : 'Dev & '}Configuration
 
 const config: C = {
   entry: {
@@ -155,12 +156,16 @@ const config: C = {
     }`
         : ''
     }
-  },
+  },${
+    options.snowpack
+      ? ''
+      : `
   devServer: {
     historyApiFallback: true,
     allowedHosts: ['localhost'],
     publicPath: '/',
-  },
+  },`
+  }
   optimization: {
     usedExports: true,
     splitChunks: {
@@ -261,11 +266,11 @@ ${
   !options.preact
     ? `  <h1 class="header">Web Typescript Template</h1>   <h2 style="text-align: center;">Using</h2>
   <p class="paragraph">
-  
+${options.snowpack ? '\n    <a href="https://www.snowpack.dev"><b>Snowpack</b></a>' : ''}
     <a href="https://webpack.js.org"><b>Webpack</b></a>
     <a href="https://babeljs.io/"><b>Babel</b></a>
     <a href="https://sass-lang.com"><b>Sass</b></a>
-  
+
   </p>
   <h2 style="text-align: center;">Supports</h2>
   <p class="paragraph">
@@ -382,15 +387,14 @@ a
 `;
 }
 
-function generateSnowpackConf() {
+function generateSnowpackConf(options: Option<'snowpack'>) {
   return `
 module.exports = {
   mount: {
     public: '/',
     src: '/_dist_',
   },
-  plugins: [
-    '@prefresh/snowpack',
+  plugins: [${options.preact ? "\n    '@prefresh/snowpack'," : ''}
     '@snowpack/plugin-dotenv',
     '@snowpack/plugin-typescript',
     '@snowpack/plugin-sass',
@@ -411,8 +415,14 @@ module.exports = {
   proxy: {
     /* ... */
   },
-  alias: {
-    /* ... */
+  alias: {${
+    options.preact
+      ? `
+    react: 'preact/compat',
+    'react-dom/test-utils': 'preact/test-utils',
+    'react-dom': 'preact/compat',`
+      : ''
+  }
   },
 };
 `;
@@ -425,7 +435,7 @@ module.exports = function (snowpackConfig, pluginOptions) {
     name: 'snowpack-plugin-add-import',
     async transform ({ id, contents, isDev, fileExt }) {
       if (fileExt === '.html') {
-        return contents.replace(/(<body>)((.|\W)*<\\/body>)/, '$1\\n<script type="module" src="/_dist_/index.js"></script>\\n$2');
+        return contents.replace(/(<body>)((.|\\W)*<\\/body>)/, '$1\\n<script type="module" src="/_dist_/index.js"></script>\\n$2');
       }
     },
   };

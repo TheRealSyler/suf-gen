@@ -25,7 +25,7 @@ import { allArgs, getProjectName, askQuestion, write, gitInfo, finishedMessage }
 
   const preact = await askQuestion('use Preact?');
 
-  const snowpack = preact ? await askQuestion('use Snowpack?') : false;
+  const snowpack = await askQuestion('use Snowpack?');
 
   const suf = await askQuestion('add suf-cli?', false);
 
@@ -38,7 +38,7 @@ import { allArgs, getProjectName, askQuestion, write, gitInfo, finishedMessage }
     template('package.json', { name, suf, author: await gitInfo(), snowpack })
   );
   await write(dir('.babelrc'), template('.babelrc', { preact }));
-  await write(dir('webpack.config.ts'), template('webpack', { preact }));
+  await write(dir('webpack.config.ts'), template('webpack', { preact, snowpack }));
   await write(dir('tsconfig.json'), template('tsconfig', { preact }));
   await write(dir('.gitignore'), template('.gitignore'));
 
@@ -50,13 +50,13 @@ import { allArgs, getProjectName, askQuestion, write, gitInfo, finishedMessage }
     await write(dir('src/layouts/main.tsx'), template('mainLayout.tsx'));
   }
   if (snowpack) {
-    await write(dir('snowpack.config.js'), template('snowpack'));
+    await write(dir('snowpack.config.js'), template('snowpack', { preact }));
     await write(dir('snowpack-plugin-add-import.js'), template('snowpack-add-import-plugin'));
   }
   await write(dir('src/index.sass'), template('index.sass'));
   await write(dir(`src/index.ts${preact ? 'x' : ''}`), template('index.main', { preact }));
 
-  await write(dir('public/index.html'), template('index.html', { preact, name }));
+  await write(dir('public/index.html'), template('index.html', { preact, name, snowpack }));
 
   const devPackages = [
     '@babel/cli',
@@ -64,7 +64,6 @@ import { allArgs, getProjectName, askQuestion, write, gitInfo, finishedMessage }
     '@babel/preset-env',
     '@babel/preset-typescript',
     '@types/webpack',
-    '@types/webpack-dev-server',
     'babel-loader',
     'css-loader',
     'del-cli',
@@ -79,17 +78,20 @@ import { allArgs, getProjectName, askQuestion, write, gitInfo, finishedMessage }
     'suf-cli',
     'webpack',
     'webpack-cli',
-    'webpack-dev-server',
   ];
   const packages: string[] = [];
+  if (!snowpack) {
+    devPackages.push('webpack-dev-server', '@types/webpack-dev-server');
+  }
   if (preact) {
     packages.push('preact', 'preact-router');
     devPackages.push('@babel/plugin-transform-react-jsx');
+    if (snowpack) {
+      devPackages.push('@prefresh/snowpack', '@snowpack/app-scripts-preact');
+    }
   }
   if (snowpack) {
     devPackages.push(
-      '@prefresh/snowpack',
-      '@snowpack/app-scripts-preact',
       '@snowpack/plugin-dotenv',
       '@snowpack/plugin-sass',
       '@snowpack/plugin-typescript',

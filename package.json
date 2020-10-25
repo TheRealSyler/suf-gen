@@ -7,7 +7,8 @@
     "link:cli": "yarn &&  tsc -b && npm link",
     "test": "jest --coverage",
     "test:watch": "jest --watch --coverage",
-    "start": " tsc -w",
+    "start": "yarn watch",
+    "watch": "tsc -w",
     "build": "yarn link:cli"
   },
   "author": "Syler",
