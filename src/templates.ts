@@ -96,15 +96,13 @@ function generateTsconfig(options: Option<'tsconfig'>) {
 }
 
 function generateWebpack(options: Option<'webpack'>) {
-  return `import { Configuration } from 'webpack';${
-    options.snowpack ? '' : "\nimport { Configuration as Dev } from 'webpack-dev-server';"
-  }
+  return `import { Configuration } from 'webpack';${options.snowpack ? '' : "\nimport { Configuration as Dev } from 'webpack-dev-server';"}
 import { resolve } from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 // const WebpackBundleAnalyzer = require('webpack-bundle-analyzer');
 
-type C = ${options.snowpack ? '' : 'Dev & '}Configuration
+type C = ${options.snowpack ? '' : '{ devServer?: Dev } &'}Configuration
 
 const config: C = {
   entry: {
@@ -146,18 +144,16 @@ const config: C = {
     ],
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js']${
-      options.preact
-        ? `,
+    extensions: ['.tsx', '.ts', '.js']${options.preact
+      ? `,
     alias: {
       react: 'preact/compat',
       'react-dom/test-utils': 'preact/test-utils',
       'react-dom': 'preact/compat',
     }`
-        : ''
+      : ''
     }
-  },${
-    options.snowpack
+  },${options.snowpack
       ? ''
       : `
   devServer: {
@@ -165,7 +161,7 @@ const config: C = {
     allowedHosts: ['localhost'],
     publicPath: '/',
   },`
-  }
+    }
   optimization: {
     usedExports: true,
     splitChunks: {
@@ -262,9 +258,8 @@ function generateIndexHtml(options: Option<'index.html'>) {
 </head>
 
 <body>
-${
-  !options.preact
-    ? `  <h1 class="header">Web Typescript Template</h1>   <h2 style="text-align: center;">Using</h2>
+${!options.preact
+      ? `  <h1 class="header">Web Typescript Template</h1>   <h2 style="text-align: center;">Using</h2>
   <p class="paragraph">
 ${options.snowpack ? '\n    <a href="https://www.snowpack.dev"><b>Snowpack</b></a>' : ''}
     <a href="https://webpack.js.org"><b>Webpack</b></a>
@@ -276,8 +271,8 @@ ${options.snowpack ? '\n    <a href="https://www.snowpack.dev"><b>Snowpack</b></
   <p class="paragraph">
     <b>Tree Shacking</b>
   </p>`
-    : ''
-}
+      : ''
+    }
 </body>
 
 </html>
@@ -415,14 +410,13 @@ module.exports = {
   proxy: {
     /* ... */
   },
-  alias: {${
-    options.preact
+  alias: {${options.preact
       ? `
     react: 'preact/compat',
     'react-dom/test-utils': 'preact/test-utils',
     'react-dom': 'preact/compat',`
       : ''
-  }
+    }
   },
 };
 `;
