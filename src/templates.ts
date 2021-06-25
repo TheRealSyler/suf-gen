@@ -67,7 +67,7 @@ function generatePackageJson(options: Option<'package.json'>) {
       ...{ author: options.author },
       license: 'MIT',
       scripts: {
-        start: options.snowpack ? 'snowpack dev' : 'webpack serve',
+        start: options.snowpack ? 'snowpack dev' : 'webpack serve --mode development',
         build: `${options.suf ? 'suf && ' : ''}del ./dist && webpack --mode production`,
         ...additionalSettings,
       },
